@@ -10,8 +10,10 @@ import java.sql.Statement;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
+// this class handles the interactions with the database
 public class SQLiteConn {
 
+    //connection
     private Connection connect() {
         String url = "jdbc:sqlite:database.db";
         Connection conn = null;
@@ -23,6 +25,7 @@ public class SQLiteConn {
         return conn;
     }
 
+    //insert into the database
     public void insert(String name, String team, double money) {
         String sql = "INSERT INTO betters(name, team, money) VALUES(?,?,?)";
 
@@ -37,6 +40,7 @@ public class SQLiteConn {
         }
     }
 
+    // return all elements from the database in a resultset
     public ResultSet selectAll() throws SQLException {
         String sql = "SELECT id, name, team, money FROM betters";
         Connection conn = this.connect();
@@ -45,6 +49,7 @@ public class SQLiteConn {
         return rs;
     }
 
+    //updates a value in the database
     public void update(int id, String name, String team, double money) {
         String sql = "UPDATE betters SET name = ? , "
                 + "team = ? , "
@@ -64,6 +69,7 @@ public class SQLiteConn {
         }
     }
 
+    //deletes an element in the databases
     public void delete(int id) {
         String sql = "DELETE FROM betters WHERE id = ?";
 
@@ -78,6 +84,19 @@ public class SQLiteConn {
         }
     }
 
+    public void deleteAll() {
+        String sql = "delete from betters";
+        try (Connection conn = this.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    // returns a Table model based on the elements of the database
     public static DefaultTableModel buildTableModel(ResultSet rs)
             throws SQLException {
 
@@ -100,7 +119,14 @@ public class SQLiteConn {
             data.add(vector);
         }
 
-        return new DefaultTableModel(data, columnNames);
+        // make elements non editable
+        return new DefaultTableModel(data, columnNames) {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
     }
 
