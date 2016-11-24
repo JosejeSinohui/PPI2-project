@@ -6,15 +6,14 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-
 public class MainScreen extends javax.swing.JFrame {
 
-    
     // Creates the object to interact with the database
     SQLiteConn database = new SQLiteConn();
-    
+
     // Uses the database connecion object to create the table info
     DefaultTableModel modelo;
+
     public MainScreen() throws SQLException {
         this.modelo = SQLiteConn.buildTableModel(database.selectAll());
         initComponents();
@@ -30,6 +29,19 @@ public class MainScreen extends javax.swing.JFrame {
         modelo.fireTableDataChanged();
         bettersTable.setModel(modelo);
         bettersTable.repaint();
+    }
+
+    public String verify(String teamName) {
+        teamName = teamName.toLowerCase();
+
+        if (teamName.equals("chivas") || teamName.equals("america")) {
+            return teamName;
+
+        } else {
+            JOptionPane.showMessageDialog(this, "Please enter a valid team", "Error", WIDTH);
+            return "";
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -54,6 +66,8 @@ public class MainScreen extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "America vs Chivas", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
         bettersTable.setModel(modelo);
         jScrollPane1.setViewportView(bettersTable);
 
@@ -68,9 +82,9 @@ public class MainScreen extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -192,7 +206,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 4, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -200,8 +214,7 @@ public class MainScreen extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    
+
     private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
         try {
             int a = (int) bettersTable.getValueAt(bettersTable.getSelectedRow(), 0);
@@ -216,7 +229,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addActionPerformed
 
         String dbName = name.getText();
-        String dbTeam = team.getText();
+        String dbTeam = this.verify(team.getText());
         Double dbAmount = null;
 
         try {
@@ -237,7 +250,7 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             int a = (int) bettersTable.getValueAt(bettersTable.getSelectedRow(), 0);
             String dbName = name.getText();
-            String dbTeam = team.getText();
+            String dbTeam = this.verify(team.getText());
             Double dbAmount = null;
 
             try {
@@ -245,7 +258,7 @@ public class MainScreen extends javax.swing.JFrame {
                 if ("".equals(dbName) || "".equals(dbTeam)) {
                     JOptionPane.showMessageDialog(this, "Please fill all of the fields", "Error", WIDTH);
                 } else {
-                    database.update(a,dbName, dbTeam, dbAmount);
+                    database.update(a, dbName, dbTeam, dbAmount);
                     this.Refresh();
                 }
             } catch (NumberFormatException numberFormatException) {
@@ -259,14 +272,13 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_modifyActionPerformed
 
     private void removeAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllActionPerformed
-       database.deleteAll();
-       this.Refresh();
+        database.deleteAll();
+        this.Refresh();
     }//GEN-LAST:event_removeAllActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
-
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
