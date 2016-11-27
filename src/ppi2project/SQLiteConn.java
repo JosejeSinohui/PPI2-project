@@ -14,7 +14,7 @@ import javax.swing.table.DefaultTableModel;
 public class SQLiteConn {
 
     //connection
-    private Connection connect() {
+    private static Connection connect() {
         String url = "jdbc:sqlite:database.db";
         Connection conn = null;
         try {
@@ -41,45 +41,74 @@ public class SQLiteConn {
     }
 
     // return all elements from the database in a resultset
-    public ResultSet selectAll() throws SQLException {
+    public static ResultSet selectAll() throws SQLException {
         String sql = "SELECT * FROM betters";
-        Connection conn = this.connect();
+        Connection conn = SQLiteConn.connect();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         return rs;
     }
 
     // trae solo los elementos de 
-    public String getWinners(String winner) throws SQLException {
+    public static DefaultTableModel getWinners(String winner) throws SQLException {
         String sql = "SELECT * "
                 + "FROM betters WHERE team LIKE '" + winner + "'";
-        Connection conn = this.connect();
+        Connection conn = SQLiteConn.connect();
         PreparedStatement pstmt = conn.prepareStatement(sql);
         ResultSet rs = pstmt.executeQuery();
 
         // global total money
-        double totalMoney = this.totalAmount();
+        double totalMoney = SQLiteConn.totalAmount();
 
         // team total money
-        double teamMoney = this.teamAmount(winner);
+        double teamMoney = SQLiteConn.teamAmount(winner);
 
-          
-        String winners = "";
-        while (rs.next()) {
-            winners += rs.getInt("id") + "    "
-                    + rs.getString("name") + "    "
-                    + rs.getDouble("money") * totalMoney / teamMoney + "\n";
+        
+        ResultSetMetaData metaData = rs.getMetaData();
+
+        // names of columns
+        Vector<String> columnNames = new Vector<String>();
+        int columnCount = metaData.getColumnCount();
+        for (int column = 1; column <= columnCount; column++) {
+            columnNames.add(metaData.getColumnName(column));
         }
 
-        return winners;
+        // data of the table
+        Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+        while (rs.next()) {
+            Vector<Object> vector = new Vector<Object>();
+                vector.add(rs.getObject(1));
+                vector.add(rs.getObject(2));
+                vector.add(rs.getObject(3));
+                vector.add((double)rs.getObject(4)* totalMoney / teamMoney);
+            
+            data.add(vector);
+        }
+
+        // make elements non editable
+        return new DefaultTableModel(data, columnNames) {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        
+        
+        
+        
+        
+        
+        
 
     }
 
     // Team total bettings used to calculate individual contribution
-    public double teamAmount(String winner) throws SQLException {
+    public static double teamAmount(String winner) throws SQLException {
         String sql = "SELECT * "
                 + "FROM betters WHERE team LIKE '" + winner + "'";
-        Connection conn = this.connect();
+        Connection conn = SQLiteConn.connect();
         PreparedStatement pstmt = conn.prepareStatement(sql);
         ResultSet rs = pstmt.executeQuery();
 
@@ -93,9 +122,9 @@ public class SQLiteConn {
     }
 
     // Total amount of money from the betters
-    public double totalAmount() throws SQLException {
+    public static double totalAmount() throws SQLException {
 
-        ResultSet rs = this.selectAll();
+        ResultSet rs = SQLiteConn.selectAll();
         double total = 0;
         while (rs.next()) {
             total += rs.getDouble("money");
