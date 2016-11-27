@@ -42,11 +42,65 @@ public class SQLiteConn {
 
     // return all elements from the database in a resultset
     public ResultSet selectAll() throws SQLException {
-        String sql = "SELECT id, name, team, money FROM betters";
+        String sql = "SELECT * FROM betters";
         Connection conn = this.connect();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         return rs;
+    }
+
+    // trae solo los elementos de 
+    public String getWinners(String winner) throws SQLException {
+        String sql = "SELECT * "
+                + "FROM betters WHERE team LIKE '" + winner + "'";
+        Connection conn = this.connect();
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        ResultSet rs = pstmt.executeQuery();
+
+        // global total money
+        double totalMoney = this.totalAmount();
+
+        // team total money
+        double teamMoney = this.teamAmount(winner);
+
+          
+        String winners = "";
+        while (rs.next()) {
+            winners += rs.getInt("id") + "    "
+                    + rs.getString("name") + "    "
+                    + rs.getDouble("money") * totalMoney / teamMoney + "\n";
+        }
+
+        return winners;
+
+    }
+
+    // Team total bettings used to calculate individual contribution
+    public double teamAmount(String winner) throws SQLException {
+        String sql = "SELECT * "
+                + "FROM betters WHERE team LIKE '" + winner + "'";
+        Connection conn = this.connect();
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        ResultSet rs = pstmt.executeQuery();
+
+        // team total money
+        double teamTotal = 0;
+        while (rs.next()) {
+            teamTotal += rs.getDouble("money");
+        }
+
+        return teamTotal;
+    }
+
+    // Total amount of money from the betters
+    public double totalAmount() throws SQLException {
+
+        ResultSet rs = this.selectAll();
+        double total = 0;
+        while (rs.next()) {
+            total += rs.getDouble("money");
+        }
+        return total;
     }
 
     //updates a value in the database
